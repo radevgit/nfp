@@ -1,0 +1,28 @@
+[package]
+name = "nfp"
+version = "0.1.0"
+edition = "2024"
+description = "No Fit Polygon"
+categories = ["science::geo", "data-structures", "game-development", "graphics"]
+keywords = ["nfp", "no-fit", "polygon", "collision", "no-fit-polygon"]
+license = "MIT"
+homepage = "https://github.com/radevgit/nfp"
+repository = "https://github.com/radevgit/nfp"
+documentation = "https://docs.rs/nfp"
+readme = "README.md"
+
+
+[lib]
+name = "nfp"
+crate-type = ["lib"]
+
+[dependencies]
+togo = "0.6"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+opt-level = 3
+# for samply
+#debug = 1
