@@ -1,6 +1,6 @@
 [package]
 name = "nfp"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
 description = "No Fit Polygon"
 categories = ["science::geo", "data-structures", "game-development", "graphics"]

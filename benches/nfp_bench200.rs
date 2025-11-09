@@ -33,7 +33,7 @@ fn main() {
     println!("\nResults:");
     println!("--------");
     println!("Total time:     {:?}", elapsed);
-    println!("Time per run:   {:.3} ms", elapsed.as_secs_f64() * 1000.0 / ITERATIONS as f64);
+    println!("Time per run:   {:.3} μs", elapsed.as_secs_f64() * 1_000_000.0 / ITERATIONS as f64);
     println!("Runs per sec:   {:.0}", ITERATIONS as f64 / elapsed.as_secs_f64());
 }
 
@@ -82,8 +82,7 @@ fn compute_centroid(points: &[Point]) -> Point {
 }
 
 /*
-cargo bench --bench nfp_benchmark
-
+cargo bench --bench nfp_bench200
 
 Iterations: 300
 
@@ -99,5 +98,16 @@ Total time:     5.604518697s
 Time per run:   18.682 ms
 Runs per sec:   54
 _______________________________________________
+Opt 1 ditch atan2
 
+Total time:     2.456991368s
+Time per run:   8189.971 μs
+Runs per sec:   122
+_______________________________________________
+Opt2 unstable sorting
+
+Total time:     2.027956028s
+Time per run:   6759.853 μs
+Runs per sec:   148
+_______________________________________________
 */
