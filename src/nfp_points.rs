@@ -166,13 +166,9 @@ impl NFP {
             (a.x - b.x).abs() < tolerance && (a.y - b.y).abs() < tolerance
         });
 
-        // Sort vertices in CCW order by angle from centroid
+        // Sort vertices in CCW order by angle from centroid (avoid atan2)
         let centroid = compute_centroid(&nfp_vertices);
-        nfp_vertices.sort_by(|a, b| {
-            let angle_a = (a.y - centroid.y).atan2(a.x - centroid.x);
-            let angle_b = (b.y - centroid.y).atan2(b.x - centroid.x);
-            angle_a.partial_cmp(&angle_b).unwrap_or(std::cmp::Ordering::Equal)
-        });
+        nfp_vertices.sort_by(|a, b| angle_cmp(a, b, &centroid));
 
         Ok(nfp_vertices)
     }
@@ -188,6 +184,39 @@ fn compute_centroid(points: &[Point]) -> Point {
     let len = points.len() as f64;
 
     Point::new(sum_x / len, sum_y / len)
+}
+
+/// Tolerance for comparing collinear points in angle sorting
+const ANGLE_CMP_EPSILON: f64 = 1e-10;
+
+// Compare points by angle around a given `centroid` without using `atan2`.
+// Uses half-plane test and perp (2D cross product) to determine CCW ordering.
+fn angle_cmp(a: &Point, b: &Point, centroid: &Point) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+
+    let ax = a.x - centroid.x;
+    let ay = a.y - centroid.y;
+    let bx = b.x - centroid.x;
+    let by = b.y - centroid.y;
+
+    // Place points into two half-planes: upper (y>0 or y==0 && x>=0) and lower.
+    let a_up = (ay > 0.0) || (ay == 0.0 && ax >= 0.0);
+    let b_up = (by > 0.0) || (by == 0.0 && bx >= 0.0);
+    if a_up != b_up {
+        // a_up true should come before b_up false
+        return a_up.cmp(&b_up).reverse();
+    }
+
+    // Same half-plane: use perp (2D cross product) to determine order
+    let perp = ax * by - ay * bx;
+    if perp.abs() > ANGLE_CMP_EPSILON {
+        return if perp > 0.0 { Ordering::Less } else { Ordering::Greater };
+    }
+
+    // Collinear: sort by distance from centroid (closer first)
+    let da = ax * ax + ay * ay;
+    let db = bx * bx + by * by;
+    da.partial_cmp(&db).unwrap_or(Ordering::Equal)
 }
 
 #[cfg(test)]

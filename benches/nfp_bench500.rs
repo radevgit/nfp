@@ -33,7 +33,7 @@ fn main() {
     println!("\nResults:");
     println!("--------");
     println!("Total time:     {:?}", elapsed);
-    println!("Time per run:   {:.3} ms", elapsed.as_secs_f64() * 1000.0 / ITERATIONS as f64);
+    println!("Time per run:   {:.3} μs", elapsed.as_secs_f64() * 1_000_000.0 / ITERATIONS as f64);
     println!("Runs per sec:   {:.0}", ITERATIONS as f64 / elapsed.as_secs_f64());
 }
 
@@ -98,6 +98,12 @@ Results:
 Total time:     13.578851406s
 Time per run:   135.789 ms
 Runs per sec:   7
+_______________________________________________
+Opt 1 ditch atan2
+
+Total time:     6.140549308s
+Time per run:   61405.493 μs
+Runs per sec:   16
 _______________________________________________
 
 */
