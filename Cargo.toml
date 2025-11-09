@@ -17,7 +17,7 @@ name = "nfp"
 crate-type = ["lib"]
 
 [dependencies]
-#togo = "0.6"
+togo = "0.6"
 
 [dev-dependencies]
 

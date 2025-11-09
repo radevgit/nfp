@@ -38,6 +38,7 @@ pub use nfp_points::point;
 pub use nfp_points::Point;
 pub use nfp_points::NFP;
 pub use nfp_points::NfpError;
+pub use nfp_points::to_arcline;
 
 
 #[cfg(test)]

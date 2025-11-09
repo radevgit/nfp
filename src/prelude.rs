@@ -10,3 +10,4 @@ pub use crate::point;
 pub use crate::Point;
 pub use crate::NFP;
 pub use crate::NfpError;
+pub use crate::to_arcline;
