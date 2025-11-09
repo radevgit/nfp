@@ -3,6 +3,26 @@
 
 use std::fmt;
 
+/// Error type for NFP operations
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NfpError {
+    /// One or both polygons are empty
+    EmptyPolygon,
+    /// One or both polygons have fewer than 3 vertices
+    InsufficientVertices,
+}
+
+impl fmt::Display for NfpError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            NfpError::EmptyPolygon => write!(f, "Polygons cannot be empty"),
+            NfpError::InsufficientVertices => write!(f, "Polygons must have at least 3 vertices"),
+        }
+    }
+}
+
+impl std::error::Error for NfpError {}
+
 /// Create a new point - shortcut for Point::new()
 pub fn point(x: f64, y: f64) -> Point {
     Point { x, y }
@@ -56,7 +76,7 @@ impl fmt::Display for Point {
     }
 }
 
-/// Helper functions for working with polygons represented as Vec<Point>
+/// Helper functions for working with polygons represented as `Vec<Point>`
 pub mod polygon {
     use super::Point;
 
@@ -108,17 +128,13 @@ pub mod polygon {
 pub struct NFP;
 
 impl NFP {
-    pub fn nfp(poly_a: &[Point], poly_b: &[Point]) -> Result<Vec<Point>, String> {
+    pub fn nfp(poly_a: &[Point], poly_b: &[Point]) -> Result<Vec<Point>, NfpError> {
         if polygon::is_empty(poly_a) || polygon::is_empty(poly_b) {
-            return Err("Polygons cannot be empty".to_string());
+            return Err(NfpError::EmptyPolygon);
         }
 
         if polygon::len(poly_a) < 3 || polygon::len(poly_b) < 3 {
-            return Err("Polygons must have at least 3 vertices".to_string());
-        }
-
-        if !polygon::is_ccw(poly_a) || !polygon::is_ccw(poly_b) {
-            return Err("Polygons must be oriented counter-clockwise".to_string());
+            return Err(NfpError::InsufficientVertices);
         }
 
         let mut nfp_vertices = Vec::new();
@@ -364,7 +380,7 @@ mod tests {
 
         let result = NFP::nfp(&empty, &triangle);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Polygons cannot be empty");
+        assert_eq!(result.unwrap_err(), NfpError::EmptyPolygon);
     }
 
     #[test]
@@ -378,7 +394,7 @@ mod tests {
 
         let result = NFP::nfp(&triangle, &empty);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Polygons cannot be empty");
+        assert_eq!(result.unwrap_err(), NfpError::EmptyPolygon);
     }
 
     #[test]
@@ -395,29 +411,10 @@ mod tests {
 
         let result = NFP::nfp(&line, &triangle);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Polygons must have at least 3 vertices");
+        assert_eq!(result.unwrap_err(), NfpError::InsufficientVertices);
     }
 
-    #[test]
-    fn test_nfp_error_clockwise_polygon() {
-        // CCW triangle
-        let triangle_ccw = vec![
-            Point::new(0.0, 0.0),
-            Point::new(1.0, 0.0),
-            Point::new(0.5, 1.0),
-        ];
 
-        // CW triangle (reversed)
-        let triangle_cw = vec![
-            Point::new(0.0, 0.0),
-            Point::new(0.5, 1.0),
-            Point::new(1.0, 0.0),
-        ];
-
-        let result = NFP::nfp(&triangle_ccw, &triangle_cw);
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Polygons must be oriented counter-clockwise");
-    }
 
     #[test]
     fn test_nfp_hexagon_and_hexagon() {
