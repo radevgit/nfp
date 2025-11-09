@@ -2,17 +2,17 @@ use nfp::prelude::*;
 use std::time::Instant;
 
 /// Number of iterations to run the NFP calculation
-const ITERATIONS: usize = 1000;
+const ITERATIONS: usize = 500;
 
 fn main() {
-    println!("NFP Benchmark");
-    println!("=============");
+    println!("NFP Example - 200 edge polygons");
+    println!("================================");
     println!("Iterations: {}\n", ITERATIONS);
 
-    // Generate two different 100-edge polygons with fixed seeds
+    // Generate two different 200-edge polygons with fixed seeds
     println!("Generating polygons...");
-    let poly_a = generate_100_edge_polygon(42);
-    let poly_b = generate_100_edge_polygon(43);
+    let poly_a = generate_200_edge_polygon(42);
+    let poly_b = generate_200_edge_polygon(43);
     println!("Polygon A: {} vertices", poly_a.len());
     println!("Polygon B: {} vertices", poly_b.len());
 
@@ -20,7 +20,7 @@ fn main() {
     let _ = NFP::nfp(&poly_a, &poly_b);
 
     // Run benchmark
-    println!("\nRunning benchmark ({} iterations)...", ITERATIONS);
+    println!("\nRunning ({} iterations)...", ITERATIONS);
     let start = Instant::now();
 
     for _ in 0..ITERATIONS {
@@ -37,9 +37,8 @@ fn main() {
     println!("Runs per sec:   {:.0}", ITERATIONS as f64 / elapsed.as_secs_f64());
 }
 
-/// Generate a 100-edge polygon using a fixed seed via bit manipulation
-/// to avoid runtime dependency on DataGen
-fn generate_100_edge_polygon(seed: u64) -> Vec<Point> {
+/// Generate a 200-edge polygon using a fixed seed via bit manipulation
+fn generate_200_edge_polygon(seed: u64) -> Vec<Point> {
     use std::f64::consts::PI;
 
     let mut points = Vec::new();
@@ -51,8 +50,8 @@ fn generate_100_edge_polygon(seed: u64) -> Vec<Point> {
         (*state >> 32) as f32 as f64 / (u32::MAX as f64)
     };
 
-    // Generate 100 points in polar coordinates
-    for _ in 0..100 {
+    // Generate 200 points in polar coordinates
+    for _ in 0..200 {
         let angle = lcg_next(&mut rng_state) * 2.0 * PI;
         let radius = 0.5 + lcg_next(&mut rng_state) * 1.5;
         points.push(point(radius * angle.cos(), radius * angle.sin()));
@@ -80,24 +79,3 @@ fn compute_centroid(points: &[Point]) -> Point {
 
     point(sum_x / len, sum_y / len)
 }
-
-/*
-cargo bench --bench nfp_benchmark
-samply record cargo run --release --example perf_build
-
-Iterations: 1000
-
-Generating polygons...
-Polygon A: 100 vertices
-Polygon B: 100 vertices
-
-Running benchmark (1000 iterations)...
-
-Results:
---------
-Total time:     4.152361987s
-Time per run:   4.152 ms
-Runs per sec:   241
-_______________________________________________
-
-*/

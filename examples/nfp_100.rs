@@ -5,40 +5,17 @@ use std::time::Instant;
 const ITERATIONS: usize = 1000;
 
 fn main() {
-    println!("NFP Benchmark");
-    println!("=============");
-    println!("Iterations: {}\n", ITERATIONS);
 
     // Generate two different 100-edge polygons with fixed seeds
-    println!("Generating polygons...");
     let poly_a = generate_100_edge_polygon(42);
     let poly_b = generate_100_edge_polygon(43);
-    println!("Polygon A: {} vertices", poly_a.len());
-    println!("Polygon B: {} vertices", poly_b.len());
-
-    // Warm up
-    let _ = NFP::nfp(&poly_a, &poly_b);
-
-    // Run benchmark
-    println!("\nRunning benchmark ({} iterations)...", ITERATIONS);
-    let start = Instant::now();
 
     for _ in 0..ITERATIONS {
         let _ = NFP::nfp(&poly_a, &poly_b);
     }
-
-    let elapsed = start.elapsed();
-
-    // Print results
-    println!("\nResults:");
-    println!("--------");
-    println!("Total time:     {:?}", elapsed);
-    println!("Time per run:   {:.3} ms", elapsed.as_secs_f64() * 1000.0 / ITERATIONS as f64);
-    println!("Runs per sec:   {:.0}", ITERATIONS as f64 / elapsed.as_secs_f64());
 }
 
 /// Generate a 100-edge polygon using a fixed seed via bit manipulation
-/// to avoid runtime dependency on DataGen
 fn generate_100_edge_polygon(seed: u64) -> Vec<Point> {
     use std::f64::consts::PI;
 
@@ -81,23 +58,6 @@ fn compute_centroid(points: &[Point]) -> Point {
     point(sum_x / len, sum_y / len)
 }
 
-/*
-cargo bench --bench nfp_benchmark
-samply record cargo run --release --example perf_build
-
-Iterations: 1000
-
-Generating polygons...
-Polygon A: 100 vertices
-Polygon B: 100 vertices
-
-Running benchmark (1000 iterations)...
-
-Results:
---------
-Total time:     4.152361987s
-Time per run:   4.152 ms
-Runs per sec:   241
-_______________________________________________
-
+/* 
+samply record cargo run --release --example nfp_100
 */
