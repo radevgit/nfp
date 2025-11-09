@@ -31,9 +31,6 @@
 
 pub mod nfp_points;
 
-#[cfg(test)]
-pub mod datagen;
-
 pub mod prelude;
 
 // Re-export the main types for easier use
@@ -42,8 +39,6 @@ pub use nfp_points::Point;
 pub use nfp_points::NFP;
 pub use nfp_points::NfpError;
 
-#[cfg(test)]
-pub use datagen::DataGen;
 
 #[cfg(test)]
 mod tests {

@@ -20,8 +20,6 @@ crate-type = ["lib"]
 #togo = "0.6"
 
 [dev-dependencies]
-rand = "0.9"
-
 
 [profile.release]
 lto = true
@@ -30,3 +28,15 @@ panic = "abort"
 opt-level = 3
 # for samply
 #debug = 1
+
+[[bench]]
+name = "nfp_bench100"
+harness = false
+
+[[bench]]
+name = "nfp_bench200"
+harness = false
+
+[[bench]]
+name = "nfp_bench500"
+harness = false
