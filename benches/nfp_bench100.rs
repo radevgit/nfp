@@ -83,7 +83,6 @@ fn compute_centroid(points: &[Point]) -> Point {
 
 /*
 cargo bench --bench nfp_bench100
-samply record cargo run --release --example perf_build
 
 Iterations: 1000
 
@@ -104,5 +103,11 @@ Opt 1 ditch atan2
 Total time:     1.725334029s
 Time per run:   1725.334 μs
 Runs per sec:   580
+_______________________________________________
+Opt2 unstable sorting
+
+Total time:     1.44724319s
+Time per run:   1447.243 μs
+Runs per sec:   691
 _______________________________________________
 */

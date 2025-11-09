@@ -157,7 +157,7 @@ impl NFP {
 
         // Remove near-duplicate points (within tolerance)
         let tolerance = 1e-10;
-        nfp_vertices.sort_by(|a, b| {
+        nfp_vertices.sort_unstable_by(|a, b| {
             a.x.partial_cmp(&b.x)
                 .unwrap_or(std::cmp::Ordering::Equal)
                 .then_with(|| a.y.partial_cmp(&b.y).unwrap_or(std::cmp::Ordering::Equal))
@@ -168,7 +168,7 @@ impl NFP {
 
         // Sort vertices in CCW order by angle from centroid (avoid atan2)
         let centroid = compute_centroid(&nfp_vertices);
-        nfp_vertices.sort_by(|a, b| angle_cmp(a, b, &centroid));
+        nfp_vertices.sort_unstable_by(|a, b| angle_cmp(a, b, &centroid));
 
         Ok(nfp_vertices)
     }

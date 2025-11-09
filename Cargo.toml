@@ -1,6 +1,6 @@
 [package]
 name = "nfp"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
 description = "No Fit Polygon"
 categories = ["science::geo", "data-structures", "game-development", "graphics"]
@@ -27,7 +27,7 @@ codegen-units = 1
 panic = "abort"
 opt-level = 3
 # for samply
-#debug = 1
+debug = 1
 
 [[bench]]
 name = "nfp_bench100"

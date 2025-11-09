@@ -82,8 +82,7 @@ fn compute_centroid(points: &[Point]) -> Point {
 }
 
 /*
-cargo bench --bench nfp_benchmark
-
+cargo bench --bench nfp_bench200
 
 Iterations: 300
 
@@ -105,5 +104,10 @@ Total time:     2.456991368s
 Time per run:   8189.971 μs
 Runs per sec:   122
 _______________________________________________
+Opt2 unstable sorting
 
+Total time:     2.027956028s
+Time per run:   6759.853 μs
+Runs per sec:   148
+_______________________________________________
 */
