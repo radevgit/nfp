@@ -535,4 +535,190 @@ mod tests {
             assert!(point.x != 0.0 || point.y != 0.0 || nfp.len() > 1);
         }
     }
+
+    #[test]
+    fn test_nfp_collinear_points() {
+        // Collinear points should still form a valid polygon (degenerate triangle)
+        let triangle_a = vec![
+            Point::new(0.0, 0.0),
+            Point::new(1.0, 0.0),
+            Point::new(0.5, 0.0), // Collinear with others
+        ];
+
+        let triangle_b = vec![
+            Point::new(0.0, 0.0),
+            Point::new(1.0, 1.0),
+            Point::new(0.0, 1.0),
+        ];
+
+        let result = NFP::nfp(&triangle_a, &triangle_b);
+        // Should complete without panicking (even if degenerate)
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_nfp_very_small_polygon() {
+        // Minimal triangles (smallest valid polygon)
+        let tiny_a = vec![
+            Point::new(0.0, 0.0),
+            Point::new(0.001, 0.0),
+            Point::new(0.0005, 0.001),
+        ];
+
+        let tiny_b = vec![
+            Point::new(0.0, 0.0),
+            Point::new(0.002, 0.0),
+            Point::new(0.001, 0.002),
+        ];
+
+        let result = NFP::nfp(&tiny_a, &tiny_b);
+        assert!(result.is_ok());
+        let nfp = result.unwrap();
+        assert!(!nfp.is_empty());
+    }
+
+    #[test]
+    fn test_nfp_negative_coordinates() {
+        // Polygons in negative coordinate space
+        let triangle_a = vec![
+            Point::new(-2.0, -2.0),
+            Point::new(-1.0, -2.0),
+            Point::new(-1.5, -1.0),
+        ];
+
+        let triangle_b = vec![
+            Point::new(-3.0, -3.0),
+            Point::new(-1.0, -3.0),
+            Point::new(-2.0, -1.0),
+        ];
+
+        let result = NFP::nfp(&triangle_a, &triangle_b);
+        assert!(result.is_ok());
+        let nfp = result.unwrap();
+        assert!(!nfp.is_empty());
+    }
+
+    #[test]
+    fn test_nfp_mixed_coordinate_signs() {
+        // Polygons spanning multiple quadrants
+        let triangle_a = vec![
+            Point::new(-1.0, -1.0),
+            Point::new(1.0, -1.0),
+            Point::new(0.0, 1.0),
+        ];
+
+        let triangle_b = vec![
+            Point::new(-0.5, -0.5),
+            Point::new(0.5, -0.5),
+            Point::new(0.0, 0.5),
+        ];
+
+        let result = NFP::nfp(&triangle_a, &triangle_b);
+        assert!(result.is_ok());
+        let nfp = result.unwrap();
+        assert!(!nfp.is_empty());
+        assert!(polygon::is_ccw(&nfp));
+    }
+
+    #[test]
+    fn test_nfp_identical_polygons() {
+        // Two identical triangles
+        let triangle = vec![
+            Point::new(0.0, 0.0),
+            Point::new(1.0, 0.0),
+            Point::new(0.5, 1.0),
+        ];
+
+        let result = NFP::nfp(&triangle, &triangle);
+        assert!(result.is_ok());
+        let nfp = result.unwrap();
+        assert!(!nfp.is_empty());
+    }
+
+    #[test]
+    fn test_nfp_very_thin_rectangle() {
+        // Very thin elongated rectangle
+        let thin_rect_a = vec![
+            Point::new(0.0, 0.0),
+            Point::new(10.0, 0.0),
+            Point::new(10.0, 0.01),
+            Point::new(0.0, 0.01),
+        ];
+
+        let square = vec![
+            Point::new(0.0, 0.0),
+            Point::new(1.0, 0.0),
+            Point::new(1.0, 1.0),
+            Point::new(0.0, 1.0),
+        ];
+
+        let result = NFP::nfp(&thin_rect_a, &square);
+        assert!(result.is_ok());
+        let nfp = result.unwrap();
+        assert!(!nfp.is_empty());
+    }
+
+    #[test]
+    fn test_nfp_large_scale_coordinates() {
+        // Polygons with very large coordinates
+        let large_a = vec![
+            Point::new(1000.0, 1000.0),
+            Point::new(1100.0, 1000.0),
+            Point::new(1050.0, 1100.0),
+        ];
+
+        let large_b = vec![
+            Point::new(2000.0, 2000.0),
+            Point::new(2050.0, 2000.0),
+            Point::new(2025.0, 2050.0),
+        ];
+
+        let result = NFP::nfp(&large_a, &large_b);
+        assert!(result.is_ok());
+        let nfp = result.unwrap();
+        assert!(!nfp.is_empty());
+    }
+
+    #[test]
+    fn test_nfp_right_angle_triangle() {
+        // Right-angled triangle (standard form)
+        let right_a = vec![
+            Point::new(0.0, 0.0),
+            Point::new(3.0, 0.0),
+            Point::new(0.0, 4.0),
+        ];
+
+        let right_b = vec![
+            Point::new(0.0, 0.0),
+            Point::new(1.0, 0.0),
+            Point::new(0.0, 1.0),
+        ];
+
+        let result = NFP::nfp(&right_a, &right_b);
+        assert!(result.is_ok());
+        let nfp = result.unwrap();
+        assert!(!nfp.is_empty());
+        assert!(polygon::is_ccw(&nfp));
+    }
+
+    #[test]
+    fn test_nfp_polygon_with_zero_area() {
+        // Three points where area rounds to near-zero (but technically valid)
+        // This tests robustness - should handle near-degenerate cases
+        let point_a = vec![
+            Point::new(0.0, 0.0),
+            Point::new(1.0, 0.0),
+            Point::new(1.0 + 1e-15, 1e-15), // Extremely close to collinear
+        ];
+
+        let point_b = vec![
+            Point::new(0.0, 0.0),
+            Point::new(0.5, 0.0),
+            Point::new(0.25, 0.5),
+        ];
+
+        let result = NFP::nfp(&point_a, &point_b);
+        // Should complete without panicking
+        assert!(result.is_ok());
+    }
 }
