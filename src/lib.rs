@@ -109,13 +109,6 @@
 //! - Polygons should be in **counter-clockwise (CCW) orientation**
 //!   (the library will auto-correct if needed)
 //! 
-//! ## Performance
-//! 
-//! For typical use cases:
-//! - **10-20 vertices**: < 1 μs
-//! - **100 vertices**: ~25 μs  
-//! - **200 vertices**: ~90 μs
-//! - **500 vertices**: ~280 μs
 
 pub mod utils;
 pub mod nfp_convex;
