@@ -31,7 +31,13 @@
 
 pub mod nfp_points;
 
+pub mod nfp_luo_rao;
+
+pub mod nfp_validation;
+
 pub mod prelude;
+
+mod nfp_tests;
 
 // Re-export the main types for easier use
 pub use nfp_points::point;
