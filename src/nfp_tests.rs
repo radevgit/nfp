@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::nfp_points::{NFP, Point, to_arcline};
+    use crate::nfp_convex::{NFPConvex, to_arcline};
     use togo::prelude::*;
 
     fn write_svg_with_arclines(filename: &str, a: &[Point], b: &[Point], nfp: &[Point]) {
@@ -45,17 +45,6 @@ mod tests {
         pts
     }
 
-    fn l_shape() -> Vec<Point> {
-        vec![
-            Point::new(0.0, 0.0),
-            Point::new(10.0, 0.0),
-            Point::new(10.0, 5.0),
-            Point::new(5.0, 5.0),
-            Point::new(5.0, 10.0),
-            Point::new(0.0, 10.0),
-        ]
-    }
-
     fn small_square() -> Vec<Point> {
         vec![
             Point::new(0.0, 0.0),
@@ -66,7 +55,7 @@ mod tests {
     }
 
     fn get_nfp(a: &[Point], b: &[Point]) -> Vec<Point> {
-        match NFP::nfp(a, b) {
+        match NFPConvex::nfp(a, b) {
             Ok(nfp) => nfp,
             Err(e) => panic!("NFP computation failed: {}", e),
         }
@@ -82,39 +71,6 @@ mod tests {
             area += (pts[j].x - pts[i].x) * (pts[j].y + pts[i].y);
         }
         area < 0.0 // Negative area = CCW
-    }
-
-    fn has_self_intersection(pts: &[Point]) -> bool {
-        if pts.len() < 4 {
-            return false;
-        }
-
-        for i in 0..pts.len() {
-            let p1 = pts[i];
-            let p2 = pts[(i + 1) % pts.len()];
-
-            for j in (i + 2)..pts.len() {
-                if j == (i + pts.len() - 1) % pts.len() {
-                    continue; // Skip adjacent edges
-                }
-
-                let p3 = pts[j];
-                let p4 = pts[(j + 1) % pts.len()];
-
-                if segments_intersect(p1, p2, p3, p4) {
-                    return true;
-                }
-            }
-        }
-        false
-    }
-
-    fn segments_intersect(p1: Point, p2: Point, p3: Point, p4: Point) -> bool {
-        let ccw = |a: Point, b: Point, c: Point| -> bool {
-            (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x)
-        };
-
-        ccw(p1, p3, p4) != ccw(p2, p3, p4) && ccw(p1, p2, p3) != ccw(p1, p2, p4)
     }
 
     fn contains_point(polygon: &[Point], point: Point) -> bool {
@@ -135,13 +91,21 @@ mod tests {
     fn polygons_overlap(a: &[Point], b: &[Point], offset: Point) -> bool {
         // Check if any vertex of A is inside B+offset
         for pt in a {
-            if contains_point(b, pt.sub(&offset)) {
+            let sub_pt = Point {
+                x: pt.x - offset.x,
+                y: pt.y - offset.y,
+            };
+            if contains_point(b, sub_pt) {
                 return true;
             }
         }
         // Check if any vertex of B+offset is inside A
         for pt in b {
-            if contains_point(a, pt.add(&offset)) {
+            let add_pt = Point {
+                x: pt.x + offset.x,
+                y: pt.y + offset.y,
+            };
+            if contains_point(a, add_pt) {
                 return true;
             }
         }
@@ -258,18 +222,17 @@ mod tests {
     }
 
     #[test]
-    fn test_l_shape_square() {
-        let a = l_shape();
-        let b = square();
+    fn test_pentagon_pentagon() {
+        let a = pentagon();
+        let b = pentagon();
         let nfp = get_nfp(&a, &b);
 
-        println!("L-Shape + Square: {} vertices", nfp.len());
+        println!("Pentagon + Pentagon: {} vertices", nfp.len());
 
-        write_svg_with_arclines("/tmp/nfp_test_l_shape.svg", &a, &b, &nfp);
+        write_svg_with_arclines("/tmp/nfp_test_pentagon_pentagon.svg", &a, &b, &nfp);
 
         assert!(nfp.len() >= 3, "NFP must have at least 3 vertices");
         assert!(is_ccw(&nfp), "NFP must be CCW");
-        // assert!(!has_self_intersection(&nfp), "NFP must not self-intersect");
 
         let mut valid_count = 0;
         for nfp_pt in &nfp {
@@ -277,7 +240,8 @@ mod tests {
                 valid_count += 1;
             }
         }
-        // assert!(valid_count > 0, "Should have valid placements");
+        assert!(valid_count > 0, "Should have valid placements");
         println!("  Valid: {}/{}\n", valid_count, nfp.len());
     }
+
 }

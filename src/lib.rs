@@ -10,7 +10,7 @@
 //! ## Usage
 //! 
 //! ```rust
-//! use nfp::{point, NFP};
+//! use nfp::{point, NFPConvex};
 //! 
 //! // Create two triangles represented as Vec<Point>
 //! let triangle_a = vec![
@@ -25,26 +25,22 @@
 //!     point(2.5, 3.0),
 //! ];
 //! 
-//! // Calculate NFP between two polygons
-//! let nfp = NFP::nfp(&triangle_a, &triangle_b).unwrap();
+//! // Calculate NFP between two convex polygons
+//! let nfp = NFPConvex::nfp(&triangle_a, &triangle_b).unwrap();
 //! ```
 
-pub mod nfp_points;
-
-pub mod nfp_luo_rao;
-
+pub mod utils;
+pub mod nfp_convex;
 pub mod nfp_validation;
-
 pub mod prelude;
 
 mod nfp_tests;
 
-// Re-export the main types for easier use
-pub use nfp_points::point;
-pub use nfp_points::Point;
-pub use nfp_points::NFP;
-pub use nfp_points::NfpError;
-pub use nfp_points::to_arcline;
+// Re-export main types and error
+pub use togo::prelude::Point;
+pub use togo::prelude::point;
+pub use nfp_convex::{NFPConvex, NfpError};
+pub use nfp_convex::to_arcline;
 
 
 #[cfg(test)]
@@ -53,7 +49,7 @@ mod tests {
 
     #[test]
     fn test_basic_functionality() {
-        let point = Point::new(1.0, 2.0);
+        let point = Point { x: 1.0, y: 2.0 };
         assert_eq!(point.x, 1.0);
         assert_eq!(point.y, 2.0);
     }

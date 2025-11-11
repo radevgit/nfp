@@ -6,8 +6,7 @@
 //! use nfp::prelude::*;
 //! ```
 
-pub use crate::point;
-pub use crate::Point;
-pub use crate::NFP;
+pub use togo::prelude::{Point, point};
+pub use crate::NFPConvex;
 pub use crate::NfpError;
-pub use crate::to_arcline;
+pub use crate::nfp_convex::to_arcline;

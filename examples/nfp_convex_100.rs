@@ -1,5 +1,4 @@
 use nfp::prelude::*;
-use std::time::Instant;
 
 /// Number of iterations to run the NFP calculation
 const ITERATIONS: usize = 1000;
@@ -7,17 +6,18 @@ const ITERATIONS: usize = 1000;
 fn main() {
 
     // Generate two different 100-edge polygons with fixed seeds
-    let poly_a = generate_100_edge_polygon(42);
-    let poly_b = generate_100_edge_polygon(43);
+    let poly_a = generate_convex_100_edge_polygon(42);
+    let poly_b = generate_convex_100_edge_polygon(43);
 
     for _ in 0..ITERATIONS {
-        let _ = NFP::nfp(&poly_a, &poly_b);
+        let _ = NFPConvex::nfp(&poly_a, &poly_b);
     }
 }
 
 /// Generate a 100-edge polygon using a fixed seed via bit manipulation
-fn generate_100_edge_polygon(seed: u64) -> Vec<Point> {
+fn generate_convex_100_edge_polygon(seed: u64) -> Vec<Point> {
     use std::f64::consts::PI;
+    use togo::algo::pointline_convex_hull;
 
     let mut points = Vec::new();
     let mut rng_state = seed;
@@ -35,7 +35,7 @@ fn generate_100_edge_polygon(seed: u64) -> Vec<Point> {
         points.push(point(radius * angle.cos(), radius * angle.sin()));
     }
 
-    // Sort by angle from centroid to ensure CCW ordering
+    // Sort by angle from centroid to ensure CCW ordering (required by convex_hull)
     let centroid = compute_centroid(&points);
     points.sort_by(|a, b| {
         let angle_a = (a.y - centroid.y).atan2(a.x - centroid.x);
@@ -43,7 +43,8 @@ fn generate_100_edge_polygon(seed: u64) -> Vec<Point> {
         angle_a.partial_cmp(&angle_b).unwrap_or(std::cmp::Ordering::Equal)
     });
 
-    points
+    // Apply convex hull to ensure convex polygon (expects CCW input)
+    pointline_convex_hull(&points)
 }
 
 fn compute_centroid(points: &[Point]) -> Point {
