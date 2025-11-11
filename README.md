@@ -1,13 +1,22 @@
 # NFP - No Fit Polygon
+
 [![Crates.io](https://img.shields.io/crates/v/nfp.svg?color=blue)](https://crates.io/crates/nfp)
 [![Documentation](https://docs.rs/nfp/badge.svg)](https://docs.rs/nfp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A Rust library that computes the No Fit Polygon (Minkowski sum) of two closed counter-clockwise oriented polygons.
+A Rust library for computing the No Fit Polygon (Minkowski sum) of two convex polygons for nesting and packing optimization.
 
-## Overview
+## What is NFP?
 
-NFP implements the Minkowski sum algorithm for polygon nesting and packing problems. Given two CCW-oriented polygons, it computes the boundary region where one polygon can be placed relative to another without overlapping.
+The No Fit Polygon defines the forbidden region where one polygon cannot be placed relative to another without collision. When polygon B's origin is **outside** the NFP, the polygons do **not** overlap. When it's **inside**, they **do** collide.
+
+## Features
+
+- ✅ **Convex polygon support** with Minkowski sum via vertex combinations and convex hull
+- ✅ **Fast computation** using Graham scan algorithm
+- ✅ **Validated output** - CCW orientation, convex, no self-intersections
+- ✅ **Automatic orientation correction** - handles CCW/CW input
+- ✅ **Zero-copy collision detection** - use point-in-polygon test on NFP
 
 ## Installation
 
@@ -15,79 +24,160 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-nfp = "0.2"
+nfp = "0.3"
 ```
 
-## Usage
+## Quick Start
 
 ```rust
 use nfp::prelude::*;
 
-// Define two CCW-oriented polygons using the point() shortcut
-let poly_a = vec![
+// Two convex polygons at origin (CCW orientation)
+let square_a = vec![
     point(0.0, 0.0),
-    point(1.0, 0.0),
-    point(0.5, 1.0),
+    point(10.0, 0.0),
+    point(10.0, 10.0),
+    point(0.0, 10.0),
 ];
 
-let poly_b = vec![
+let square_b = vec![
     point(0.0, 0.0),
-    point(2.0, 0.0),
-    point(2.0, 2.0),
-    point(0.0, 2.0),
+    point(5.0, 0.0),
+    point(5.0, 5.0),
+    point(0.0, 5.0),
 ];
 
-// Calculate the No Fit Polygon
-match NFP::nfp(&poly_a, &poly_b) {
-    Ok(nfp) => println!("NFP has {} vertices", nfp.len()),
+// Compute NFP
+match NFPConvex::nfp(&square_a, &square_b) {
+    Ok(nfp) => {
+        println!("NFP has {} vertices", nfp.len());
+        // Now use NFP for collision detection:
+        // point inside NFP → collision, point outside → no collision
+    }
     Err(e) => eprintln!("Error: {}", e),
+}
+```
+
+## Collision Detection
+
+Once you have the NFP, detect collisions by testing if B's origin is inside or outside:
+
+```rust
+use nfp::prelude::*;
+
+fn point_in_polygon(pt: Point, polygon: &[Point]) -> bool {
+    let mut inside = false;
+    let mut p1 = polygon[polygon.len() - 1];
+    for p2 in polygon {
+        if ((p2.y > pt.y) != (p1.y > pt.y))
+            && (pt.x < (p1.x - p2.x) * (pt.y - p2.y) / (p1.y - p2.y) + p2.x)
+        {
+            inside = !inside;
+        }
+        p1 = *p2;
+    }
+    inside
+}
+
+// Compute NFP first
+let square_a = vec![point(0.0, 0.0), point(10.0, 0.0), point(10.0, 10.0), point(0.0, 10.0)];
+let square_b = vec![point(0.0, 0.0), point(5.0, 0.0), point(5.0, 5.0), point(0.0, 5.0)];
+let nfp = NFPConvex::nfp(&square_a, &square_b).unwrap();
+
+// Check if placing B at (15.0, 15.0) causes collision
+let test_position = point(15.0, 15.0);
+if point_in_polygon(test_position, &nfp) {
+    println!("Collision detected!");
+} else {
+    println!("Safe placement");
 }
 ```
 
 ## Requirements
 
-- Both polygons must be closed (first and last points form an edge)
-- Both polygons must be oriented counter-clockwise (CCW)
-- Both polygons must have at least 3 vertices
+- Both input polygons **must be convex**
+- Both polygons must have **at least 3 vertices**
+- Polygons should be in **counter-clockwise (CCW) orientation** (auto-corrected if needed)
+- Polygons must be **closed** (last point connects to first conceptually)
 
-## API
+## API Reference
 
-### `point(x, y)`
-Shortcut function to create a new point.
+### `NFPConvex::nfp(poly_a, poly_b) -> Result<Vec<Point>, NfpError>`
 
-### `Point`
-2D point with x, y coordinates.
+Computes the No Fit Polygon for two convex polygons using Minkowski sum.
 
-**Methods:**
-- `new(x, y)` - Create a new point
-- `distance(other)` - Calculate distance to another point
-- `distance_squared(other)` - Calculate squared distance
-- `add(other)` - Vector addition
-- `sub(other)` - Vector subtraction
+**Arguments:**
+- `poly_a` - First convex polygon as slice of points
+- `poly_b` - Second convex polygon as slice of points
+
+**Returns:**
+- `Ok(Vec<Point>)` - NFP as counter-clockwise convex polygon
+- `Err(NfpError)` - If input validation fails
+
+**Time Complexity:** O(n·m log(n·m)) where n = |A| vertices, m = |B| vertices
 
 ### `NfpError`
-Error type for NFP operations.
+
+Error enumeration for NFP operations.
 
 **Variants:**
 - `EmptyPolygon` - One or both input polygons are empty
 - `InsufficientVertices` - One or both polygons have fewer than 3 vertices
 
-Implements `Display` and `std::error::Error` traits. You can simply print errors with `{}` formatting or use the enum variants for pattern matching when you need programmatic error handling.
+**Example:**
+```rust
+use nfp::prelude::*;
 
-### `NFP`
-Main calculator for Minkowski sums.
+match NFPConvex::nfp(&a, &b) {
+    Ok(nfp) => { /* use nfp */ }
+    Err(NfpError::EmptyPolygon) => eprintln!("Empty polygon provided"),
+    Err(NfpError::InsufficientVertices) => eprintln!("Polygon needs ≥3 vertices"),
+}
+```
 
-**Methods:**
-- `nfp(poly_a, poly_b) -> Result<Vec<Point>, NfpError>` - Compute NFP of two polygons
+### `Point`
 
-### `polygon` module
-Utility functions for polygon operations:
-- `len(vertices)` - Get vertex count
-- `is_empty(vertices)` - Check if empty
-- `is_ccw(vertices)` - Check counter-clockwise orientation
-- `ensure_ccw(vertices)` - Ensure CCW orientation (mutates)
-- `translate(vertices, offset)` - Translate polygon by offset
+2D coordinate point from the `togo` geometry library.
+
+**Fields:**
+- `x: f64` - X coordinate
+- `y: f64` - Y coordinate
+
+### `point(x, y) -> Point`
+
+Helper function to create a new Point.
+
+```rust
+use nfp::prelude::*;
+
+let p = point(1.5, 2.5);
+assert_eq!(p.x, 1.5);
+assert_eq!(p.y, 2.5);
+```
+
+
+## Algorithm
+
+The implementation uses the **Minkowski Sum via Vertex Combinations**:
+
+1. Validate inputs (non-empty, convex, ≥3 vertices)
+2. Ensure counter-clockwise orientation
+3. Negate polygon B (reflection through origin)
+4. Generate all vertex sum combinations: {a + b | a ∈ A, b ∈ -B}
+5. Compute convex hull of sum points using Graham scan
+6. Return convex hull boundary as NFP
+
+## Limitations
+
+- Current version supports **Convex polygons only**
+
+
+## References
+
+- Minkowski sum: https://en.wikipedia.org/wiki/Minkowski_addition
+- No-Fit Polygon: https://en.wikipedia.org/wiki/No-fit_polygon
+- Graham scan: https://en.wikipedia.org/wiki/Graham_scan
 
 ## Related Projects
 
-NFP is part of the open-sourced [Nest2D](https://nest2d.com) projects collection.
+NFP is part of the [Nest2D](https://nest2d.com) collection of nesting and packing tools.

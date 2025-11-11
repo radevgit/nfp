@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.0] - 2025-11-11
+- Refactored code and API is different
+- Current implementation supports only convex polygons (Still Unoptimized)
+
 ## [0.2.2] - 2025-11-09
 - performance atan2 
 - parformance unstable sort (total 64%)

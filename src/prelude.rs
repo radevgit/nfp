@@ -9,4 +9,3 @@
 pub use togo::prelude::{Point, point};
 pub use crate::NFPConvex;
 pub use crate::NfpError;
-pub use crate::nfp_convex::to_arcline;

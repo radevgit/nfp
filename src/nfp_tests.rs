@@ -244,4 +244,118 @@ mod tests {
         println!("  Valid: {}/{}\n", valid_count, nfp.len());
     }
 
+    #[test]
+    fn test_fixed_20_edge_polygons() {
+        // Fixed data extracted from nfp_convex_20 example (seeds 42, 43)
+        let a = vec![
+            Point::new(-31.39, 4.52),
+            Point::new(-13.05, -14.42),
+            Point::new(-6.04, -20.37),
+            Point::new(6.25, -27.44),
+            Point::new(38.81, 2.21),
+            Point::new(38.32, 7.77),
+            Point::new(0.71, 32.95),
+        ];
+
+        let b = vec![
+            Point::new(-39.07, -4.87),
+            Point::new(-38.65, -6.96),
+            Point::new(-7.11, -31.53),
+            Point::new(-4.10, -31.32),
+            Point::new(37.99, -9.39),
+            Point::new(27.91, 6.35),
+            Point::new(-9.67, 31.38),
+            Point::new(-33.74, 20.57),
+        ];
+
+        let expected_nfp = vec![
+            Point::new(-69.38, 13.91),
+            Point::new(-59.30, -1.84),
+            Point::new(-40.96, -20.78),
+            Point::new(-33.96, -26.73),
+            Point::new(3.62, -51.75),
+            Point::new(15.91, -58.82),
+            Point::new(39.99, -48.01),
+            Point::new(72.55, -18.35),
+            Point::new(77.88, 7.08),
+            Point::new(77.40, 12.63),
+            Point::new(76.97, 14.73),
+            Point::new(45.43, 39.30),
+            Point::new(7.81, 64.47),
+            Point::new(4.81, 64.27),
+            Point::new(-37.29, 42.34),
+        ];
+
+        let nfp = get_nfp(&a, &b);
+
+        println!("\n=== Fixed 20-Edge Polygon Test ===");
+        println!("Polygon A: {} vertices", a.len());
+        for (i, p) in a.iter().enumerate() {
+            println!("  A[{}]: ({:.2}, {:.2})", i, p.x, p.y);
+        }
+        println!("\nPolygon B: {} vertices", b.len());
+        for (i, p) in b.iter().enumerate() {
+            println!("  B[{}]: ({:.2}, {:.2})", i, p.x, p.y);
+        }
+        println!("\nComputed NFP: {} vertices", nfp.len());
+        for (i, p) in nfp.iter().enumerate() {
+            println!("  NFP[{}]: ({:.2}, {:.2})", i, p.x, p.y);
+        }
+        println!("\nExpected NFP: {} vertices", expected_nfp.len());
+        for (i, p) in expected_nfp.iter().enumerate() {
+            println!("  Expected[{}]: ({:.2}, {:.2})", i, p.x, p.y);
+        }
+        println!();
+
+        write_svg_with_arclines("/tmp/nfp_test_fixed_20edge.svg", &a, &b, &nfp);
+
+        // Basic assertions
+        assert!(nfp.len() >= 3, "NFP must have at least 3 vertices");
+        assert_eq!(nfp.len(), expected_nfp.len(), "NFP should have 15 vertices");
+        
+        // Check that computed NFP matches expected (within floating point tolerance)
+        const TOLERANCE: f64 = 0.02;
+        for (i, (computed, expected)) in nfp.iter().zip(expected_nfp.iter()).enumerate() {
+            assert!(
+                (computed.x - expected.x).abs() < TOLERANCE && (computed.y - expected.y).abs() < TOLERANCE,
+                "NFP vertex {} doesn't match: computed ({:.2}, {:.2}), expected ({:.2}, {:.2})",
+                i, computed.x, computed.y, expected.x, expected.y
+            );
+        }
+
+        // Verify NFP properties
+        assert!(is_ccw(&nfp), "NFP must be counter-clockwise");
+
+        // Test collision detection at boundary
+        let test_origin = Point::new(70.35, 70.35);
+        assert!(
+            !contains_point(&nfp, test_origin),
+            "B origin at ({:.2}, {:.2}) should be outside NFP (no collision)",
+            test_origin.x,
+            test_origin.y
+        );
+
+        // Test collision detection: when placing B at any NFP vertex, check for overlap
+        let mut no_overlap_count = 0;
+        for (i, nfp_pt) in nfp.iter().enumerate() {
+            if !polygons_overlap(&a, &b, *nfp_pt) {
+                no_overlap_count += 1;
+            } else {
+                println!(
+                    "  OVERLAP at NFP[{}]: ({:.2}, {:.2})",
+                    i, nfp_pt.x, nfp_pt.y
+                );
+            }
+        }
+        assert!(
+            no_overlap_count > 0,
+            "Should have valid placements (no overlap) at NFP vertices"
+        );
+
+        println!(
+            "  No-overlap placements: {}/{}\n",
+            no_overlap_count, nfp.len()
+        );
+    }
+
 }

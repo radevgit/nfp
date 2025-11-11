@@ -1,6 +1,6 @@
 [package]
 name = "nfp"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2024"
 description = "No Fit Polygon"
 categories = ["science::geo", "data-structures", "game-development", "graphics"]
@@ -30,13 +30,16 @@ opt-level = 3
 #debug = 1
 
 [[bench]]
-name = "nfp_bench100"
+name = "nfp_convex100"
+path = "benches/nfp_convex100.rs"
 harness = false
 
 [[bench]]
-name = "nfp_bench200"
+name = "nfp_convex200"
+path = "benches/nfp_convex200.rs"
 harness = false
 
 [[bench]]
-name = "nfp_bench500"
+name = "nfp_convex500"
+path = "benches/nfp_convex500.rs"
 harness = false

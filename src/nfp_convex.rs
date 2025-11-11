@@ -1,8 +1,50 @@
 //! Convex polygon No-Fit Polygon (NFP) computation using Minkowski sum approach
 //! 
-//! This module implements NFP calculation for convex polygons using edge merging.
-//! The algorithm combines edges from both polygons, sorts them by angle, and traces
-//! the boundary to produce the NFP.
+//! This module implements NFP calculation for convex polygons using the Minkowski sum
+//! via vertex combinations and convex hull computation.
+//! 
+//! ## Algorithm Overview
+//! 
+//! The algorithm computes the Minkowski sum A ⊕ (-B) as follows:
+//! 
+//! 1. **Input Validation**: Ensure both polygons are valid (≥3 vertices)
+//! 2. **Normalize**: Convert both polygons to counter-clockwise (CCW) orientation
+//! 3. **Negate B**: Compute -B by reflecting B around the origin
+//! 4. **Vertex Sums**: Generate all combinations: {a + b | a ∈ A, b ∈ -B}
+//! 5. **Convex Hull**: Compute the convex hull of all sum points using Graham scan
+//! 6. **Validate**: Ensure result is CCW with no self-intersections
+//! 7. **Return**: NFP as a CCW convex polygon
+//! 
+//! ## Time Complexity
+//! 
+//! - Vertex sums: O(n·m) where n = |A| vertices, m = |B| vertices
+//! - Convex hull (Graham scan): O(n·m log(n·m))
+//! - Overall: O(n·m log(n·m))
+//! 
+//! ## Example
+//! 
+//! ```rust
+//! use nfp::{point, NFPConvex};
+//! 
+//! // Two squares
+//! let square_a = vec![
+//!     point(0.0, 0.0),
+//!     point(10.0, 0.0),
+//!     point(10.0, 10.0),
+//!     point(0.0, 10.0),
+//! ];
+//! 
+//! let square_b = vec![
+//!     point(0.0, 0.0),
+//!     point(5.0, 0.0),
+//!     point(5.0, 5.0),
+//!     point(0.0, 5.0),
+//! ];
+//! 
+//! // Compute NFP
+//! let nfp = NFPConvex::nfp(&square_a, &square_b).unwrap();
+//! assert!(nfp.len() >= 3);
+//! ```
 
 use togo::prelude::Point;
 use crate::utils;
@@ -31,26 +73,53 @@ impl std::error::Error for NfpError {}
 pub struct NFPConvex;
 
 impl NFPConvex {
-    /// Calculate the No Fit Polygon (NFP) for two convex polygons
-    /// using Minkowski Sum (edge merging method).
+    /// Calculate the No Fit Polygon (NFP) for two convex polygons using Minkowski sum.
     ///
-    /// This implementation works for convex polygons by combining edges from both
-    /// polygons, sorting them by angle, and tracing the boundary to produce the NFP.
+    /// # Algorithm
     ///
-    /// The algorithm:
-    /// 1. Reflects polygon B around the origin
-    /// 2. Collects all edges from A and reflected B
-    /// 3. Sorts edges by angle
-    /// 4. Traces the boundary starting from the sum of minimum points
-    /// 5. Returns the NFP boundary as a CCW polygon
+    /// Computes the Minkowski sum A ⊕ (-B) by:
+    /// 1. Generating all vertex combinations from A and -B
+    /// 2. Computing the convex hull of the sum points using Graham scan
+    /// 3. Returning the convex hull boundary as the NFP
     ///
     /// # Arguments
-    /// * `poly_a` - First convex polygon (as slice of points)
-    /// * `poly_b` - Second convex polygon (as slice of points)
+    ///
+    /// * `poly_a` - First convex polygon as slice of points (CCW orientation preferred)
+    /// * `poly_b` - Second convex polygon as slice of points (CCW orientation preferred)
     ///
     /// # Returns
-    /// * `Ok(Vec<Point>)` - NFP as a counter-clockwise polygon
-    /// * `Err(NfpError)` - If polygons are empty or have insufficient vertices
+    ///
+    /// * `Ok(Vec<Point>)` - NFP as counter-clockwise convex polygon
+    /// * `Err(NfpError::EmptyPolygon)` - If either polygon is empty
+    /// * `Err(NfpError::InsufficientVertices)` - If either polygon has < 3 vertices
+    ///
+    /// # Properties
+    ///
+    /// - **Convexity**: Result is always convex
+    /// - **Orientation**: Result is always counter-clockwise (CCW)
+    /// - **No self-intersections**: NFP boundary has no crossing edges
+    /// - **Collision detection**: Point outside NFP → no collision; point inside → collision
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use nfp::{point, NFPConvex};
+    ///
+    /// let tri_a = vec![
+    ///     point(0.0, 0.0),
+    ///     point(10.0, 0.0),
+    ///     point(5.0, 10.0),
+    /// ];
+    ///
+    /// let tri_b = vec![
+    ///     point(0.0, 0.0),
+    ///     point(5.0, 0.0),
+    ///     point(2.5, 5.0),
+    /// ];
+    ///
+    /// let nfp = NFPConvex::nfp(&tri_a, &tri_b).unwrap();
+    /// assert!(nfp.len() >= 3, "NFP must have at least 3 vertices");
+    /// ```
     pub fn nfp(poly_a: &[Point], poly_b: &[Point]) -> Result<Vec<Point>, NfpError> {
         if poly_a.is_empty() || poly_b.is_empty() {
             return Err(NfpError::EmptyPolygon);
@@ -115,6 +184,7 @@ impl NFPConvex {
 ///
 /// # Returns
 /// A Vec of togo::Arc objects representing the polygon as line segments
+#[allow(dead_code)]
 pub fn to_arcline(vertices: &[Point]) -> Vec<togo::prelude::Arc> {
     use togo::prelude::*;
     

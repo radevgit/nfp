@@ -10,7 +10,7 @@ checksum = "407c7bedb3b911c8ea781c631ef928d9f59f5e17253aed1e628b0c5950478fd7"
 
 [[package]]
 name = "nfp"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "togo",
 ]

@@ -16,22 +16,23 @@ fn main() {
     println!("Computing NFP...");
     
     // Debug: Check polygon orientations
-    println!("Polygon A is CCW: {}", is_ccw(&poly_a));
-    println!("Polygon B is CCW: {}", is_ccw(&poly_b));
+    println!("Polygon A is CCW: {}", nfp::utils::is_ccw(&poly_a));
+    println!("Polygon B is CCW: {}", nfp::utils::is_ccw(&poly_b));
     
-    // Print first few vertices
-    println!("First 3 vertices of Polygon A:");
-    for (i, p) in poly_a.iter().take(3).enumerate() {
+    // Print all A and B vertices
+    println!("All vertices of Polygon A:");
+    for (i, p) in poly_a.iter().enumerate() {
         println!("  A[{}]: ({:.2}, {:.2})", i, p.x, p.y);
     }
-    println!("First 3 vertices of Polygon B:");
-    for (i, p) in poly_b.iter().take(3).enumerate() {
+    println!("All vertices of Polygon B:");
+    for (i, p) in poly_b.iter().enumerate() {
         println!("  B[{}]: ({:.2}, {:.2})", i, p.x, p.y);
     }
+    println!();
     
     let result = NFPConvex::nfp(&poly_a, &poly_b).unwrap();
     println!("NFP result: {} vertices", result.len());
-    println!("NFP result is CCW: {}", is_ccw(&result));
+    println!("NFP result is CCW: {}", nfp::utils::is_ccw(&result));
     
     // Check if NFP is actually convex
     let is_convex_nfp = check_convexity(&result);
@@ -39,9 +40,9 @@ fn main() {
     println!();
 
     println!("Converting to arclines...");
-    let arcline_a = to_arcline(&poly_a);
-    let arcline_b = to_arcline(&poly_b);
-    let nfpresult = to_arcline(&result);
+    let arcline_a = nfp::nfp_convex::to_arcline(&poly_a);
+    let arcline_b = nfp::nfp_convex::to_arcline(&poly_b);
+    let nfpresult = nfp::nfp_convex::to_arcline(&result);
     
     println!("Arcline A: {} arcs", arcline_a.len());
     println!("Arcline B: {} arcs", arcline_b.len());
@@ -201,22 +202,6 @@ fn compute_centroid(points: &[nfp::Point]) -> nfp::Point {
     let len = points.len() as f64;
 
     nfp::point(sum_x / len, sum_y / len)
-}
-
-// Check if polygon is CCW using shoelace formula
-fn is_ccw(vertices: &[nfp::Point]) -> bool {
-    if vertices.len() < 3 {
-        return false;
-    }
-
-    let mut sum = 0.0;
-    for i in 0..vertices.len() {
-        let j = (i + 1) % vertices.len();
-        let vi = &vertices[i];
-        let vj = &vertices[j];
-        sum += (vj.x - vi.x) * (vj.y + vi.y);
-    }
-    sum < 0.0
 }
 
 // Compare points by angle around a given centroid without using atan2
