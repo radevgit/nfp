@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.3.1] - 2025-11-12
+- Using the new TOGO version. Fix in convex hull. Improved performance 5.5 times.
+
 ## [0.3.0] - 2025-11-11
 - Refactored code and API is different
 - Current implementation supports only convex polygons (Still Unoptimized)

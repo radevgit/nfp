@@ -71,3 +71,44 @@ pub fn find_min_vertex(vertices: &[Point]) -> Option<Point> {
 pub fn epsilon() -> f64 {
     EPS
 }
+
+/// Generate a convex polygon using an elongated ellipse with perturbation
+/// 
+/// # Arguments
+/// * `steps` - Number of vertices in the polygon (e.g., 100, 200, 500)
+/// * `major_axis` - Length of the ellipse's major axis (a parameter)
+/// * `minor_axis` - Length of the ellipse's minor axis (b parameter)
+/// * `perturbation_scale` - Scale factor for random perturbation
+/// * `seed` - Random seed for reproducible perturbation
+/// 
+/// # Returns
+/// A Vec of Point objects representing the polygon
+pub fn generate_ellipse_polygon(
+    steps: usize,
+    major_axis: f64,
+    minor_axis: f64,
+    perturbation_scale: f64,
+    seed: u64,
+) -> Vec<Point> {
+    let mut points = Vec::new();
+    
+    for i in 0..steps {
+        let t = 2.0 * PI * (i as f64) / (steps as f64);
+        
+        // Ellipse formula: radius = sqrt(a² sin²t + b² cos²t)
+        let a_sq = major_axis * major_axis;
+        let b_sq = minor_axis * minor_axis;
+        let sin_t = t.sin();
+        let cos_t = t.cos();
+        
+        // Add perturbation based on seed for variety
+        let perturbation = ((seed.wrapping_mul(i as u64).wrapping_add(12345) % 1000) as f64 / 1000.0) * perturbation_scale;
+        let radius = (a_sq * sin_t * sin_t + b_sq * cos_t * cos_t).sqrt() + perturbation;
+        
+        let x = radius * cos_t;
+        let y = radius * sin_t;
+        points.push(Point { x, y });
+    }
+    
+    points
+}

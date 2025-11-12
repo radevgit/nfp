@@ -11,16 +11,16 @@ fn main() {
 
     // Generate two different 500-edge polygons with fixed seeds
     println!("Generating polygons...");
-    let poly_a = generate_500_edge_polygon(46);
-    let poly_b = generate_500_edge_polygon(47);
+    let poly_a = nfp::utils::generate_ellipse_polygon(500, 200.0, 50.0, 5.0, 46);
+    let poly_b = nfp::utils::generate_ellipse_polygon(500, 200.0, 50.0, 5.0, 47);
     println!("Polygon A: {} vertices", poly_a.len());
     println!("Polygon B: {} vertices", poly_b.len());
 
+        // Run benchmark
+    println!("\nRunning benchmark ({} iterations)...", ITERATIONS);
     // Warm up
     let _ = NFPConvex::nfp(&poly_a, &poly_b);
 
-    // Run benchmark
-    println!("\nRunning benchmark ({} iterations)...", ITERATIONS);
     let start = Instant::now();
 
     for _ in 0..ITERATIONS {
@@ -35,31 +35,6 @@ fn main() {
     println!("Total time:     {:?}", elapsed);
     println!("Time per run:   {:.3} μs", elapsed.as_secs_f64() * 1_000_000.0 / ITERATIONS as f64);
     println!("Runs per sec:   {:.0}", ITERATIONS as f64 / elapsed.as_secs_f64());
-}
-
-/// Generate a convex polygon with ~500 vertices using an elongated parametric shape
-fn generate_500_edge_polygon(seed: u64) -> Vec<Point> {
-    let mut points = Vec::new();
-    let steps = 500;
-    
-    // Generate points along an elongated ellipse with perturbation for variety
-    for i in 0..steps {
-        let t = 2.0 * std::f64::consts::PI * (i as f64) / (steps as f64);
-        
-        // Elongated ellipse: a=200 (major axis), b=50 (minor axis)
-        let a = 200.0;
-        let b = 50.0;
-        
-        // Add slight perturbation based on seed for variety
-        let perturbation = ((seed.wrapping_mul(i as u64).wrapping_add(99999) % 1000) as f64 / 1000.0) * 5.0;
-        let radius = (a * a * (t.sin() * t.sin()) + b * b * (t.cos() * t.cos())).sqrt() + perturbation;
-        
-        let x = radius * t.cos();
-        let y = radius * t.sin();
-        points.push(point(x, y));
-    }
-    
-    points
 }
 
 /*
@@ -78,5 +53,10 @@ Results:
 Total time:     268.709642271s
 Time per run:   13435482.114 μs
 Runs per sec:   0
+_______________________________________________
+With new TOGO version
+Total time:     5.782735538s
+Time per run:   289136.777 μs
+Runs per sec:   3
 _______________________________________________
 */
