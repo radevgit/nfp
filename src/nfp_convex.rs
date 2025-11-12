@@ -46,8 +46,7 @@
 //! assert!(nfp.len() >= 3);
 //! ```
 
-use togo::prelude::Point;
-use crate::utils;
+use togo::prelude::*;
 
 /// Error type for NFP operations
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -134,14 +133,8 @@ impl NFPConvex {
 
     /// Internal computation function
     fn compute(a: &[Point], b: &[Point]) -> Vec<Point> {
-        // Ensure both polygons are in CCW order
-        let mut a_ccw = a.to_vec();
-        let mut b_ccw = b.to_vec();
-        utils::ensure_ccw(&mut a_ccw);
-        utils::ensure_ccw(&mut b_ccw);
-
         // Negate B (Minkowski sum with -B)
-        let mut b_negated = b_ccw.clone();
+        let mut b_negated = b.to_vec();
         b_negated.reverse();
         for pt in &mut b_negated {
             pt.x = -pt.x;
@@ -149,28 +142,15 @@ impl NFPConvex {
         }
 
         // Compute Minkowski sum by generating all vertex sums
-        let mut sum_points = Vec::new();
-        for &a_v in &a_ccw {
+        let mut sum_points = Vec::with_capacity(a.len() * b_negated.len());
+        for &a_v in a {
             for &b_v in &b_negated {
-                sum_points.push(togo::prelude::point(a_v.x + b_v.x, a_v.y + b_v.y));
+                sum_points.push(point(a_v.x + b_v.x, a_v.y + b_v.y));
             }
         }
 
         // Use togo's convex hull to get the proper boundary
-        use togo::algo::pointline_convex_hull;
-        let sum_points_togo: Vec<togo::prelude::Point> = sum_points;
-        let hull_togo = pointline_convex_hull(&sum_points_togo);
-
-        // Convert back to our Point type
-        let mut hull: Vec<Point> = hull_togo
-            .iter()
-            .map(|p| Point { x: p.x, y: p.y })
-            .collect();
-
-        // Ensure CCW
-        utils::ensure_ccw(&mut hull);
-
-        hull
+        pointline_convex_hull(&sum_points)
     }
 }
 
