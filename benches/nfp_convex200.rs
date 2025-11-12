@@ -60,4 +60,9 @@ Total time:     3.033751272s
 Time per run:   30337.513 μs
 Runs per sec:   33
 _______________________________________________
+Using new TOGO version v0.6.11
+Total time:     1.618352554s
+Time per run:   16183.526 μs
+Runs per sec:   62
+_______________________________________________
 */
