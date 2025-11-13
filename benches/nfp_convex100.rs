@@ -66,4 +66,14 @@ Total time:     2.492149655s
 Time per run:   2492.150 μs
 Runs per sec:   401
 _______________________________________________
+Data changed so now the time increase:
+Total time:     3.848276513s
+Time per run:   3848.277 μs
+Runs per sec:   260
+_______________________________________________
+New Convex Hull in TOGO
+Total time:     1.71532328s
+Time per run:   1715.323 μs
+Runs per sec:   583
+_______________________________________________
 */

@@ -1,7 +1,10 @@
 # Changelog
 
+## [0.3.3] - 2025-11-13
+- New Convex Hull in TOGO (~50%)
+
 ## [0.3.2] - 2025-11-12
-- performance improvement with faster convex hull (~%30)
+- Performance improvement with faster convex hull (~30%)
 
 ## [0.3.1] - 2025-11-12
 - Using the new TOGO version. Fix in convex hull. Improved performance 5.5 times.

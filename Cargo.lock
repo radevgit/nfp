@@ -10,7 +10,7 @@ checksum = "407c7bedb3b911c8ea781c631ef928d9f59f5e17253aed1e628b0c5950478fd7"
 
 [[package]]
 name = "nfp"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "togo",
 ]
@@ -23,9 +23,9 @@ checksum = "4e27ee8bb91ca0adcf0ecb116293afa12d393f9c2b9b9cd54d33e8078fe19839"
 
 [[package]]
 name = "togo"
-version = "0.6.11"
+version = "0.6.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ce66ef3d368bbe3b1326b81b82cdc27b385439560432c55857c0b44ccbdc0f3"
+checksum = "8af5f22a58b000aceb2667f184e58de09ccb5a105c1dc82183020996057f1ed7"
 dependencies = [
  "aabb",
  "robust",

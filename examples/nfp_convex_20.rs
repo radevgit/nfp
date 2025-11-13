@@ -72,7 +72,7 @@ fn main() {
     }
     
     let trans = point(100.0, 100.0);
-    let ttt = point(-29.65, -29.65);
+    let ttt = point(-16.0, -16.0);
     
     // Test: Check if B origin is inside NFP
     let b_origin = trans + ttt;

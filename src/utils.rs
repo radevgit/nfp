@@ -95,20 +95,20 @@ pub fn generate_ellipse_polygon(
     for i in 0..steps {
         let t = 2.0 * PI * (i as f64) / (steps as f64);
         
-        // Ellipse formula: radius = sqrt(a² sin²t + b² cos²t)
-        let a_sq = major_axis * major_axis;
-        let b_sq = minor_axis * minor_axis;
-        let sin_t = t.sin();
+        // Proper ellipse: x = a*cos(t), y = b*sin(t)
         let cos_t = t.cos();
+        let sin_t = t.sin();
         
         // Add perturbation based on seed for variety
         let perturbation = ((seed.wrapping_mul(i as u64).wrapping_add(12345) % 1000) as f64 / 1000.0) * perturbation_scale;
-        let radius = (a_sq * sin_t * sin_t + b_sq * cos_t * cos_t).sqrt() + perturbation;
         
-        let x = radius * cos_t;
-        let y = radius * sin_t;
+        // Base ellipse coordinates
+        let x = major_axis * cos_t + perturbation * cos_t;
+        let y = minor_axis * sin_t + perturbation * sin_t;
+        
         points.push(Point { x, y });
     }
     
     points
 }
+
