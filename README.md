@@ -10,14 +10,6 @@ A Rust library for computing the No Fit Polygon (Minkowski sum) of two convex po
 
 The No Fit Polygon defines the forbidden region where one polygon cannot be placed relative to another without collision. When polygon B's origin is **outside** the NFP, the polygons do **not** overlap. When it's **inside**, they **do** collide.
 
-## Features
-
-- ✅ **Convex polygon support** with Minkowski sum via vertex combinations and convex hull
-- ✅ **Fast computation** using Graham scan algorithm
-- ✅ **Validated output** - CCW orientation, convex, no self-intersections
-- ✅ **Automatic orientation correction** - handles CCW/CW input
-- ✅ **Zero-copy collision detection** - use point-in-polygon test on NFP
-
 ## Installation
 
 Add this to your `Cargo.toml`:
@@ -97,30 +89,30 @@ if point_in_polygon(test_position, &nfp) {
 
 - Both input polygons **must be convex**
 - Both polygons must have **at least 3 vertices**
-- Polygons should be in **counter-clockwise (CCW) orientation** (auto-corrected if needed)
+- Polygons should be in **counter-clockwise (CCW) orientation** 
 - Polygons must be **closed** (last point connects to first conceptually)
 
 ## API Reference
 
-### `NFPConvex::nfp(poly_a, poly_b) -> Result<Vec<Point>, NfpError>`
+`NFPConvex::nfp(poly_a, poly_b) -> Result<Vec<Point>, NfpError>`
 
 Computes the No Fit Polygon for two convex polygons using Minkowski sum.
 
-**Arguments:**
+Arguments:
 - `poly_a` - First convex polygon as slice of points
 - `poly_b` - Second convex polygon as slice of points
 
-**Returns:**
+Returns:
 - `Ok(Vec<Point>)` - NFP as counter-clockwise convex polygon
 - `Err(NfpError)` - If input validation fails
 
-**Time Complexity:** O(n·m log(n·m)) where n = |A| vertices, m = |B| vertices
+Time Complexity: O(n·m log(n·m)) where n = |A| vertices, m = |B| vertices
 
-### `NfpError`
+`NfpError`
 
 Error enumeration for NFP operations.
 
-**Variants:**
+Variants:
 - `EmptyPolygon` - One or both input polygons are empty
 - `InsufficientVertices` - One or both polygons have fewer than 3 vertices
 
@@ -135,15 +127,15 @@ match NFPConvex::nfp(&a, &b) {
 }
 ```
 
-### `Point`
+`Point`
 
 2D coordinate point from the `togo` geometry library.
 
-**Fields:**
+Fields:
 - `x: f64` - X coordinate
 - `y: f64` - Y coordinate
 
-### `point(x, y) -> Point`
+`point(x, y) -> Point`
 
 Helper function to create a new Point.
 
