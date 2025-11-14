@@ -150,7 +150,7 @@ impl NFPConvex {
         }
 
         // Use togo's convex hull to get the proper boundary
-        pointline_convex_hull(&sum_points)
+        points_convex_hull(&sum_points)
     }
 }
 

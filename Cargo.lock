@@ -23,9 +23,9 @@ checksum = "4e27ee8bb91ca0adcf0ecb116293afa12d393f9c2b9b9cd54d33e8078fe19839"
 
 [[package]]
 name = "togo"
-version = "0.6.12"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8af5f22a58b000aceb2667f184e58de09ccb5a105c1dc82183020996057f1ed7"
+checksum = "4851a7bd03425e450a5f24ea14366e72b1ed862ca04bf387ac73d425d34448a2"
 dependencies = [
  "aabb",
  "robust",
